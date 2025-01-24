@@ -1,8 +1,9 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authManager'
+ 
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -31,7 +32,7 @@ const checkEducatorStatus = async () => {
   isEducatorStatus.value = tokenResult?.claims.role === "educator"
 }
 
-checkEducatorStatus()
+watch(() => authStore.currentUser, checkEducatorStatus, { immediate: true })
 
 const handleSignOut = () => {
     authStore.signoutUser()
@@ -41,6 +42,10 @@ const handleSignOut = () => {
 const shouldShowNavbar = computed(() => {
   const navbarRoutes = ['/dashboard', '/dashboard/', '/activities', '/activities/']
   return navbarRoutes.includes(route.path)
+})
+
+onMounted(() => {
+	checkEducatorStatus()
 })
 </script>
 

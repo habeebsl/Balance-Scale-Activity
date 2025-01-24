@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 import models
 from database import engine
@@ -7,7 +8,7 @@ from routes.activities import activity_router
 from routes.problems import problem_router
 from routes.templates import template_router
 from routes.users import user_router
-    
+
 
 tags_metadata = [
     {
@@ -48,3 +49,7 @@ app.include_router(user_router, prefix="/users", tags=["users"])
 app.include_router(activity_router, prefix="/activities", tags=["activities"])
 app.include_router(problem_router, prefix="/problems", tags=["problems"])
 app.include_router(template_router, tags=["templates"])
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)

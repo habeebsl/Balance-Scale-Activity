@@ -13,13 +13,12 @@ export default defineConfig({
     vueDevTools(),
   ],
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        rewrite: (path: string) => path.replace(/^\/api/, ''),
-      },
-    },
+    host: '0.0.0.0',
+    port: 4173
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 5173
   },
   resolve: {
     alias: {
