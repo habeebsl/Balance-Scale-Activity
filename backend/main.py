@@ -32,23 +32,19 @@ tags_metadata = [
 app = FastAPI(openapi_tags=tags_metadata)
 models.Base.metadata.create_all(bind=engine)
 
-origins = [
-    "http://localhost:5173",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["Content-Type", "Authorization"],
 )
 
-app.include_router(user_router, prefix="/users", tags=["users"])
-app.include_router(activity_router, prefix="/activities", tags=["activities"])
-app.include_router(problem_router, prefix="/problems", tags=["problems"])
-app.include_router(template_router, tags=["templates"])
+app.include_router(user_router, prefix="/api/users", tags=["users"])
+app.include_router(activity_router, prefix="/api/activities", tags=["activities"])
+app.include_router(problem_router, prefix="/api/problems", tags=["problems"])
+app.include_router(template_router, prefix="/api" tags=["templates"])
 
 
 if __name__ == "__main__":
