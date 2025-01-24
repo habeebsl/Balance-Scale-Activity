@@ -1,0 +1,102 @@
+<script setup>
+import { getAuth, signInWithPopup, GoogleAuthProvider, getIdToken } from "firebase/auth"
+import { useRouter } from "vue-router"
+import { ref } from "vue"
+import axios from "axios"
+import NotificationMessage from "./NotificationMessage.vue"
+
+
+const props = defineProps({
+	buttonType: {
+		type: String,
+		default: 'in',
+		validator: (value) => ['in', 'up'].includes(value)
+	}
+})
+
+const showMessage = ref(false)
+const message = ref('')
+const messageType = ref('')
+const router = useRouter()
+
+const handleGoogleSignIn = async () => {
+    try {
+        const provider = new GoogleAuthProvider()
+        const auth = getAuth()
+        const result = await signInWithPopup(auth, provider)
+        const user = result.user;
+        const idToken = await getIdToken(user)
+
+        if (props.buttonType === 'up') {
+            const response = await axios.post("http://localhost:8000/users/create", {}, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    "Content-Type": "application/json",
+                }
+            })
+
+            const data = response.data
+            console.log(data)
+            
+            router.push("/select-role")
+        } else {
+            router.push("/activities")
+        }
+    } catch (error) {
+        console.error(error)
+		if (error.response && error.response.status === 409) {
+            message.value = "User already exists with this email"
+        } else {
+            message.value = error.message
+        }
+        messageType.value = "error"
+        showMessage.value = true
+    } finally {
+        setTimeout(() => {
+			showMessage.value = false
+		}, 3500)
+    }
+}
+</script>
+
+<template>
+<button class="google-btn" @click="handleGoogleSignIn">
+	<svg width="18px" height="18px" viewBox="-3 0 262 262" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
+		<path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" fill="#4285F4"/>
+		<path d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1" fill="#34A853"/>
+		<path d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782" fill="#FBBC05"/>
+		<path d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251" fill="#EB4335"/>
+	</svg>
+	Sign {{ buttonType }} with Google
+</button>
+<NotificationMessage
+	v-if="showMessage" 
+	:message="message"
+	:type="messageType" 
+/>
+</template>
+  
+
+
+<style scoped>
+.google-btn {
+    width: 100%;
+    padding: 0.8rem;
+    margin: 1rem 0;
+    background-color: white;
+    color: #757575;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background-color 0.2s;
+}
+
+.google-btn:hover {
+    background-color: #f5f5f5;
+}
+</style>
