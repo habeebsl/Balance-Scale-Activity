@@ -21,9 +21,6 @@
     - Link the backend to a mySQL database so that user information and activity settings can be stored there.
 2. **Implement API Routes**
     - Connect Firebase for session management, user registration, and login.
-        
-    ![Alt Text](https://github.com/habeebsl/Balance-Scale-Activity/blob/main/images/AuthFlow.png)
-     
     - Create endpoints for fetching, updating, and saving game progress.
     - Allow educators to define activity templates and publish custom activities.
 
