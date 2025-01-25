@@ -18,7 +18,7 @@
 
 1. **Set Up FastAPI Backend**
     - Set up a FastAPI project and specify the models, routes, and utility folder structures.
-    - Link the backend to a PostgreSQL database so that user information and activity settings can be stored there.
+    - Link the backend to a mySQL database so that user information and activity settings can be stored there.
 2. **Implement API Routes**
     - Connect Firebase for session management, user registration, and login.
         
@@ -48,8 +48,7 @@
 | Activity Builder | 1 day | Builder operational, integrated with API |
 | Testing & Dockerizing | 1 day | Fully tested and dockerized app |
 
-## **3. Resources and Tools**
+## **3. Project Tools**
 
 - **Frontend**: Vue.js, Matter.js, Tailwind, CSS3
-- **Backend**: FastAPI, Firebase (for auth and database)
-- **Testing**: Pytest (back-end)
+- **Backend**: FastAPI, mySQL, Pytest, Firebase (for auth)
