@@ -24,7 +24,7 @@ class Activity(Base):
     published = Column(Boolean, default=False)
     difficulty = Column(String(10))
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    user_id = Column(String(128), ForeignKey('users.uid'))  # Add this line
+    user_id = Column(String(128), ForeignKey('users.uid'))
 
     user = relationship("User", back_populates="activities")
     problemset = relationship("Problem", back_populates="activity", cascade="all, delete-orphan")
@@ -40,6 +40,6 @@ class Problem(Base):
     time_limit = Column(Integer, nullable=True)
     hint = Column(String(1000), nullable=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    activity_id = Column(String(36), ForeignKey('activities.id'))  # Add this line
+    activity_id = Column(String(36), ForeignKey('activities.id'))
 
     activity = relationship("Activity", back_populates="problemset")
