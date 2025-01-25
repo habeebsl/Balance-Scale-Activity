@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watchEffect, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authManager'
  
 
@@ -11,28 +11,19 @@ const route = useRoute()
 
 const isEducatorStatus = ref(false)
 
-const checkEducatorStatus = async () => {
-
-  if (authStore.isLoading) {
-      await new Promise(resolve => {
-          const unsubscribe = watch(
-              () => authStore.isLoading,
-              (loading) => {
-                  if (!loading) {
-                      unsubscribe()
-                      resolve()
-                  }
-              },
-              { immediate: true }
-          )
-      })
+watchEffect(async () => {
+  if (authStore.currentUser && !authStore.isLoading) {
+    try {
+      const tokenResult = await authStore.currentUser.getIdTokenResult()
+      isEducatorStatus.value = tokenResult?.claims.role === "educator"
+    } catch (error) {
+      console.error("Educator status check failed:", error)
+      isEducatorStatus.value = false
+    }
+  } else {
+    isEducatorStatus.value = false
   }
-
-  const tokenResult = await authStore.currentUser?.getIdTokenResult()
-  isEducatorStatus.value = tokenResult?.claims.role === "educator"
-}
-
-watch(() => authStore.currentUser, checkEducatorStatus, { immediate: true })
+})
 
 const handleSignOut = () => {
     authStore.signoutUser()
@@ -42,10 +33,6 @@ const handleSignOut = () => {
 const shouldShowNavbar = computed(() => {
   const navbarRoutes = ['/dashboard', '/dashboard/', '/activities', '/activities/']
   return navbarRoutes.includes(route.path)
-})
-
-onMounted(() => {
-	checkEducatorStatus()
 })
 </script>
 

@@ -65,5 +65,9 @@ export const userService = {
 
 	setUserRole(roleData: SetRole) {
 		return apiClient.post("/users/set-user-role", roleData)
+	},
+
+	getUser() {
+		return apiClient.get("/users/get-user")
 	}
 }

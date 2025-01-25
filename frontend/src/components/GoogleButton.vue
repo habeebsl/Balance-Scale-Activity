@@ -1,8 +1,8 @@
 <script setup>
-import { getAuth, signInWithPopup, GoogleAuthProvider, getIdToken } from "firebase/auth"
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
 import { useRouter } from "vue-router"
 import { ref } from "vue"
-import axios from "axios"
+import { userService } from "@/services/api"
 import NotificationMessage from "./NotificationMessage.vue"
 
 
@@ -23,32 +23,30 @@ const handleGoogleSignIn = async () => {
     try {
         const provider = new GoogleAuthProvider()
         const auth = getAuth()
-        const result = await signInWithPopup(auth, provider)
-        const user = result.user;
-        const idToken = await getIdToken(user)
 
-        if (props.buttonType === 'up') {
-            const response = await axios.post("http://localhost:8000/users/create", {}, {
-                headers: {
-                    Authorization: `Bearer ${idToken}`,
-                    "Content-Type": "application/json",
-                }
-            })
+        await signInWithPopup(auth, provider)
 
-            const data = response.data
-            console.log(data)
-            
-            router.push("/select-role")
-        } else {
+        const response = await userService.getUser()
+
+        const data = response.data
+        console.log(data)
+
+        if (data.exists) {
             router.push("/activities")
-        }
-    } catch (error) {
-        console.error(error)
-		if (error.response && error.response.status === 409) {
-            message.value = "User already exists with this email"
         } else {
-            message.value = error.message
+            await userService.createUser()
+            router.push("/select-role")
         }
+        
+    } catch (error) {
+        let errorMessage = "Sign-in failed"
+        console.error(error)
+        if (error.code === 'auth/account-exists-with-different-credential') {
+            errorMessage = "Email already registered with a different method"
+        } else if (error.response && error.response.status === 409) {
+            errorMessage = "User already exists with this email"
+        }
+        message.value = errorMessage
         messageType.value = "error"
         showMessage.value = true
     } finally {

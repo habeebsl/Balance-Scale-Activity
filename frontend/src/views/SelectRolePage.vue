@@ -18,20 +18,6 @@ const messageType = ref('')
 
 const handleButtonClick = async () => {
     roleStore.isSaving = true
-    if (authStore.isLoading) {
-        await new Promise(resolve => {
-            const unsubscribe = watch(
-                () => authStore.isLoading,
-                (loading) => {
-                    if (!loading) {
-                        unsubscribe()
-                        resolve()
-                    }
-                },
-                { immediate: true }
-            )
-        })
-    }
 
     if (authStore.isLoggedIn) {
         try {
