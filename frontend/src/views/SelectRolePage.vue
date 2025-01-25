@@ -22,13 +22,11 @@ const handleButtonClick = async () => {
     if (authStore.isLoggedIn) {
         try {
             const roleData = { role: roleStore.selectedRole }
-            console.log(roleData)
             const response = await userService.setUserRole(roleData)
             const data = response.data
             if (data.error) {
                 throw new Error(data.error)
             } else {
-                console.log(data)
                 await authStore.currentUser?.getIdToken(true)
                 router.push("/activities")
             }

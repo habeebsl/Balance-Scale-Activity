@@ -13,10 +13,7 @@ const handleLogin = async (formData) => {
     try {
 		authMetaStore.isSaving = true
 		const auth = getAuth()
-		const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password)
-		const user = userCredential.user;
-		console.log(user)
-		console.log(auth.currentUser)
+		await signInWithEmailAndPassword(auth, formData.email, formData.password)
 		router.push("/activities")
     } catch (error) {
         console.error(error)

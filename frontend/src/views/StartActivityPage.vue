@@ -74,7 +74,6 @@ onMounted(async () => {
         const response = await activityService.getActivity(endingSegment)
         
         data.value = response.data.activity
-        console.log(data)
         activityStore.problems.length = 0
 
         data.value.problemset.forEach((problem) => {

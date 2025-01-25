@@ -14,7 +14,6 @@ const messageType = ref('')
 
 const handleSave = async (formData) => {
     activityStore.isSaving = true
-	console.log(activityStore.isSaving)
     try {
 		if (!activityStore.problems.length) {
 	    	throw new Error("Activity must contain a problem")
@@ -46,7 +45,6 @@ const handleSave = async (formData) => {
 		
         const response = await activityService.createActivity(activityData)
 		const data = response.data
-		console.log(data)
 		activityStore.showSavedIndicator = true
         setTimeout(() => {
             activityStore.showSavedIndicator = false

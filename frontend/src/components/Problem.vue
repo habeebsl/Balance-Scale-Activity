@@ -51,7 +51,6 @@ watch(formData, (newVal) => {
         limit: newVal.limit === '' ? null : Number(newVal.limit),
         time_limit: newVal.time_limit === '' ? null : Number(newVal.time_limit)
     }
-    console.log(processedData)
     activityStore.problems[props.step - 1] = processedData
 }, { deep: true })
 </script>

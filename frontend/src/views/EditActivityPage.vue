@@ -44,7 +44,7 @@ const handleSave = async (formData) => {
                 throw new Error("Inputs cannot be assigned negative numbers")
             }
 
-        });
+        })
 
         if (activityStore.toRemove.length > 0) {
             const problemData = []
@@ -70,7 +70,6 @@ const handleSave = async (formData) => {
         }
 
         const response = await activityService.updateActivity(endingSegment, activityData)
-        console.log(response)
         activityStore.showSavedIndicator = true
         setTimeout(() => {
             activityStore.showSavedIndicator = false

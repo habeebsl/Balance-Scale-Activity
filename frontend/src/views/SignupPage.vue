@@ -31,7 +31,6 @@ const handleFormSubmit = async (formData) => {
 		const response = await userService.createUser(userData)
 
 		const data = response.data
-		console.log(data)
 		router.push("/select-role")
 
 	} catch (error) {
