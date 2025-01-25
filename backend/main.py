@@ -34,7 +34,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost:4173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,7 +44,7 @@ app.add_middleware(
 app.include_router(user_router, prefix="/api/users", tags=["users"])
 app.include_router(activity_router, prefix="/api/activities", tags=["activities"])
 app.include_router(problem_router, prefix="/api/problems", tags=["problems"])
-app.include_router(template_router, prefix="/api" tags=["templates"])
+app.include_router(template_router, prefix="/api", tags=["templates"])
 
 
 if __name__ == "__main__":
