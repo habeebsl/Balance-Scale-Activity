@@ -27,7 +27,7 @@ def test_create_user():
     username = "testuser"
     expected_keys = ["uid", "email", "username", "role"]
     response = client.post(
-        "/users/create",
+        "/api/users/create",
         headers={"Authorization": "Bearer valid_token"},
         json={"username": username}
     )
@@ -38,13 +38,13 @@ def test_create_user():
 
 def test_create_same_user_again():
     first_response = client.post(
-        "/users/create",
+        "/api/users/create",
         headers={"Authorization": "Bearer valid_token"},
         json={"username": "testuser"}
     )
     assert first_response.status_code == 201
     second_response = client.post(
-        "/users/create",
+        "/api/users/create",
         headers={"Authorization": "Bearer valid_token"},
         json={"username": "testuser"}
     )
@@ -56,7 +56,7 @@ def test_create_user_invalid_token():
     app.dependency_overrides[verify_token] = mock_verify_token
     username = "testuser"
     response = client.post(
-        "/users/create",
+        "/api/users/create",
         headers={"Authorization": "Bearer invalid_token"},
         json={"username": username}
     )

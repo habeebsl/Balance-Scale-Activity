@@ -28,7 +28,7 @@ def db_fixture():
 @pytest.fixture
 def test_user(db_fixture):
     response = client.post(
-        "/users/create",
+        "/api/users/create",
         headers={"Authorization": "Bearer valid_token"},
         json={"username": "testuser"}
     )
@@ -39,7 +39,7 @@ def test_user(db_fixture):
 @pytest.fixture
 def test_activity(test_user):
     response = client.post(
-        "/activities/create",
+        "/api/activities/create",
         headers={"Authorization": "Bearer valid_token"},
         json={
             "name": "Test Activity",
@@ -66,7 +66,7 @@ def test_create_activity(test_activity):
 def test_get_activity(test_activity):
     activity_data = test_activity.json()
     response = client.get(
-        f"/activities/{activity_data.get('id')}",
+        f"/api/activities/{activity_data.get('id')}",
         headers={"Authorization": "Bearer valid_token"}
     )
 
@@ -78,7 +78,7 @@ def test_activity_restriction(test_activity):
     uid_manager.reset_uid()
     email_manager.save_email("testuser2@gmail.com")
     response = client.post(
-        "/users/create",
+        "/api/users/create",
         headers={"Authorization": "Bearer valid_token"},
         json={"username": "testuser2"}
     )
@@ -87,7 +87,7 @@ def test_activity_restriction(test_activity):
     activity_data = test_activity.json()
 
     response = client.get(
-        f"/activities/{activity_data.get('id')}",
+        f"/api/activities/{activity_data.get('id')}",
         headers={"Authorization": "Bearer valid_token"}
     )
 
@@ -103,7 +103,7 @@ def test_edit_activity(test_activity):
     json_input["name"] = "Template 2"
     json_input["problemset"][0]["target"] = 200
     response = client.put(
-        f"/activities/{activity_data.get('id')}",
+        f"/api/activities/{activity_data.get('id')}",
         headers={"Authorization": "Bearer valid_token"},
         json=json_input
     )
@@ -117,7 +117,7 @@ def test_edit_activity(test_activity):
 def test_delete_activity(test_activity):
     activity_data = test_activity.json()
     response = client.delete(
-        f"/activities/{activity_data.get('id')}",
+        f"/api/activities/{activity_data.get('id')}",
         headers={"Authorization": "Bearer valid_token"}
     )
 

@@ -114,7 +114,6 @@ async def delete_activity(id: str, db: db_dependency, token=Depends(verify_token
 
 @activity_router.get("", status_code=status.HTTP_200_OK, response_model=list[PublishedActivityResponse])
 async def list_activities(db: db_dependency, activity_limit: Optional[int] = Query(None, ge=1), token=Depends(verify_token)):
-    print("Started something")
     activities = db.query(models.Activity)\
                 .options(joinedload(models.Activity.user))\
                 .filter(models.Activity.published == True)

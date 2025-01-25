@@ -36,6 +36,17 @@ async def create_user(db: db_dependency, request_data: Optional[UserBase] = None
     return db_user
 
 
+@user_router.get("/get-user", status_code=status.HTTP_200_OK)
+async def get_user(db: db_dependency, token=Depends(verify_token)):
+    uid = token["uid"]
+    user = db.query(models.User).filter(models.User.uid == uid).first()
+
+    if not user:
+        return {"exists": False}
+    else:
+        return {"exists": True}
+
+
 @user_router.post("/set-user-role", status_code=status.HTTP_201_CREATED)
 async def set_user_role(request_data: RoleRequest, db: db_dependency, token=Depends(verify_token)):
     try:
