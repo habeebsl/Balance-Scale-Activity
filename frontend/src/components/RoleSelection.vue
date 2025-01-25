@@ -1,69 +1,13 @@
 <script setup>
-import axios from 'axios'
-import { getIdToken } from 'firebase/auth'
-import { watch, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineEmits } from 'vue'
 import RoleCard from '@/components/RoleCard.vue'
 import ButtonSpinner from './ButtonSpinner.vue'
-import NotificationMessage from './NotificationMessage.vue'
-import { useRoleState } from '@/stores/roleState'
-import { useAuthStore } from '@/stores/authManager'
+import { useRoleStore } from '@/stores/roleStore'
 
 
-const state = useRoleState()
-const authStore = useAuthStore()
-const router = useRouter()
-const showMessage = ref(false)
-const message = ref('')
-const messageType = ref('')
+const emit = defineEmits(['finish'])
+const roleStore = useRoleStore()
 
-const isSaving = ref(false)
-
-const handleButtonClick = async () => {
-    isSaving.value = true
-    if (authStore.isLoading) {
-        await new Promise(resolve => {
-            const unsubscribe = watch(
-                () => authStore.isLoading,
-                (loading) => {
-                    if (!loading) {
-                        unsubscribe()
-                        resolve()
-                    }
-                },
-                { immediate: true }
-            )
-        })
-    }
-
-    if (authStore.isLoggedIn) {
-        try {
-            const roleData = { role: state.selectedRole }
-            console.log(roleData)
-            const response = await axios.post("http://localhost:8000/users/set-user-role", roleData, {
-                headers: {
-                    Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-                    "Content-Type": "application/json",
-                }
-            })
-            const data = response.data
-            if (data.error) {
-                throw new Error(data.error)
-            } else {
-                console.log(data)
-                await authStore.currentUser?.getIdToken(true)
-                router.push("/activities")
-            }
-        } catch (error) {
-            console.error(error)
-            message.value = error.message
-            messageType.value = "error"
-            showMessage.value = true
-        } finally {
-            isSaving.value = false
-        }
-    }
-}
 </script>
 
 <template>
@@ -109,19 +53,14 @@ const handleButtonClick = async () => {
 
     <button 
         class="next-button"
-        @click="handleButtonClick"
-        v-if="state.selectedRole"
-        :disabled="isSaving"
+        @click="emit('finish')"
+        v-if="roleStore.selectedRole"
+        :disabled="roleStore.isSaving"
     >
     Finish
-    <ButtonSpinner v-if="isSaving" />
+    <ButtonSpinner v-if="roleStore.isSaving" />
     </button>
 </div>
-<NotificationMessage 
-    v-if="showMessage" 
-    :message="message"
-    :type="messageType" 
-/>
 </template>
   
 

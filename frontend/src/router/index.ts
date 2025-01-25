@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/authManager'
 import { watch } from 'vue'
-import Activities from '@/views/Activities.vue'
+import ActivitiesPage from '@/views/ActivitiesPage.vue'
 import EducatorDashboard from '@/views/EducatorDashboard.vue'
-import Signup from '@/views/Signup.vue'
-import SelectRole from '@/views/SelectRole.vue'
-import PageNotFound from '@/views/PageNotFound.vue'
-import CreateActivity from '@/views/CreateActivity.vue'
-import Login from '@/views/Login.vue'
-import EditActivity from '@/views/EditActivity.vue'
-import StartActivity from '@/views/StartActivity.vue'
-import Home from '@/views/Home.vue'
+import SignupPage from '@/views/SignupPage.vue'
+import SelectRolePage from '@/views/SelectRolePage.vue'
+import NotFoundPage from '@/views/NotFoundPage.vue'
+import CreateActivityPage from '@/views/CreateActivityPage.vue'
+import LoginPage from '@/views/LoginPage.vue'
+import EditActivityPage from '@/views/EditActivityPage.vue'
+import StartActivityPage from '@/views/StartActivityPage.vue'
+import HomePage from '@/views/HomePage.vue'
 
 
 const router = createRouter({
@@ -19,7 +19,7 @@ const router = createRouter({
     {
         path: "/",
         name: "home",
-        component: Home,
+        component: HomePage,
         beforeEnter: (to, from, next) => {
             next("/activities")
         }
@@ -27,7 +27,7 @@ const router = createRouter({
     {
         path: "/signup",
         name: "signup",
-        component: Signup,
+        component: SignupPage,
         meta: {
             userSignedIn: true
         }
@@ -35,7 +35,7 @@ const router = createRouter({
     {
         path: "/select-role",
         name: "select-role",
-        component: SelectRole,
+        component: SelectRolePage,
         meta: {
             requiresAuth: true,
             roleSelected: true
@@ -44,7 +44,7 @@ const router = createRouter({
     {
         path: "/login",
         name: "login",
-        component: Login,
+        component: LoginPage,
         meta: {
             userSignedIn: true
         }
@@ -52,7 +52,7 @@ const router = createRouter({
     {
         path: "/activities",
         name: "activities",
-        component: Activities,
+        component: ActivitiesPage,
         meta: {
             requiresAuth: true,
             requiresRole: true
@@ -61,12 +61,12 @@ const router = createRouter({
     {
         path: "/activities/:id",
         name: "activity-page",
-        component: StartActivity
+        component: StartActivityPage
     },
     {
         path: "/activities/edit/:id",
         name: "edit-activity",
-        component: EditActivity,
+        component: EditActivityPage,
         meta: {
             requiresAuth: true,
             requiresRole: true,
@@ -86,7 +86,7 @@ const router = createRouter({
     {
         path: "/activities/create",
         name: "create-activity",
-        component: CreateActivity,
+        component: CreateActivityPage,
         meta: {
             requiresAuth: true,
             requiresRole: true,
@@ -96,7 +96,7 @@ const router = createRouter({
     {
         path: "/:catchAll(.*)",
         name: "not-found",
-        component: PageNotFound
+        component: NotFoundPage
     }
   ],
 })

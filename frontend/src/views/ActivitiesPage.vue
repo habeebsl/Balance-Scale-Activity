@@ -1,15 +1,11 @@
 <script setup>
-import { getIdToken } from 'firebase/auth'
 import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { activityService } from '@/services/api'
 import NotificationMessage from '@/components/NotificationMessage.vue'
 import ActivityCard from '@/components/ActivityCard.vue'
-import { useAuthStore } from '@/stores/authManager'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import EmptyState from '@/components/EmptyState.vue'
 
-const authStore = useAuthStore()
-const date = ref(new Date())
 
 const showMessage = ref(false)
 const message = ref('')
@@ -31,12 +27,7 @@ const filteredActivities = computed(() => {
 onMounted(async () => {
     try {
         isLoading.value = true
-        const response = await axios.get("http://localhost:8000/activities", {
-            headers: {
-                Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-                "Content-Type": "application/json",
-            }    
-        })
+        const response = await activityService.getActivities()
         const data = response.data
         activities.value = data
     } catch (error) {
@@ -76,7 +67,6 @@ onMounted(async () => {
 		title="No Activities Created Yet"
 		description="Be on standby for now"
 		:showButton="false"
-		@create="handleCreate"
 	/>
 
 	<ActivityCard

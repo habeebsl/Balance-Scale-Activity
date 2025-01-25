@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 
-export const useRoleState = defineStore('roleState', {
+export const useRoleStore = defineStore('roleState', {
     state: () => ({
-        selectedRole: ''
+        selectedRole: '',
+        isSaving: false
     }),
 
     actions: {

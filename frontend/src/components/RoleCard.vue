@@ -1,5 +1,5 @@
 <script setup>
-import { useRoleState } from '@/stores/roleState.ts'
+import { useRoleStore } from '@/stores/roleStore'
 
 defineProps({
     role: {
@@ -9,15 +9,15 @@ defineProps({
     }
 })
 
-const state = useRoleState()
+const roleStore = useRoleStore()
 
 </script>
 
 <template>
 <div 
     class="role-card" 
-    :class="{ active: state.selectedRole === role }"
-    @click="state.selectRole(role)"
+    :class="{ active: roleStore.selectedRole === role }"
+    @click="roleStore.selectRole(role)"
 >
     <slot></slot>
 </div>

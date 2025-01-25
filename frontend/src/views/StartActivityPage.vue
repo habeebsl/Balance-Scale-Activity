@@ -1,21 +1,18 @@
 <script setup>
-import ActivityIntro from '@/components/ActivityIntro.vue'
-import { ref, computed, onMounted, reactive, nextTick } from 'vue'
-import { useActivity } from '@/stores/activityStore'
-import { useAuthStore } from '@/stores/authManager'
-import { useRoute, useRouter } from 'vue-router'
-import { getIdToken } from 'firebase/auth'
 import { v4 as uuidv4 } from 'uuid'
+import { ref, computed, onMounted, reactive, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useActivity } from '@/stores/activityStore'
+import { activityService } from '@/services/api'
 import Popup from '@/components/Popup.vue'
+import ActivityIntro from '@/components/ActivityIntro.vue'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import BalanceScale from '@/components/BalanceScale.vue'
-import axios from 'axios'
 
 
 const balanceScaleRef = ref(null)
 const showIntro = ref(true)
 const activityStore = useActivity()
-const authStore = useAuthStore()
 const currentProblem = computed(() => {
     return activityStore.problems[activityStore.currentStep] || {}
 })
@@ -74,12 +71,7 @@ const notEqualToTarget = () => {
 onMounted(async () => {
     try {
         isLoading.value = true
-        const response = await axios.get(`http://localhost:8000/activities/${endingSegment}`, {
-            headers: {
-                Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-                "Content-Type": "application/json",
-            }
-        })
+        const response = await activityService.getActivity(endingSegment)
         
         data.value = response.data.activity
         console.log(data)

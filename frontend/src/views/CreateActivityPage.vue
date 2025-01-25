@@ -1,8 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import axios from 'axios'
-import { getIdToken } from 'firebase/auth'
-import { useAuthStore } from '@/stores/authManager'
+import { activityService } from '@/services/api'
 import Problem from '@/components/Problem.vue'
 import CreateActivityLayout from '@/components/CreateActivityLayout.vue'
 import { useActivity } from '@/stores/activityStore'
@@ -10,7 +8,6 @@ import NotificationMessage from '@/components/NotificationMessage.vue'
 import { isNegativeNumber } from '@/utils/helpers'
 
 const activityStore = useActivity()
-const authStore = useAuthStore()
 const showMessage = ref(false)
 const message = ref('')
 const messageType = ref('')
@@ -47,12 +44,7 @@ const handleSave = async (formData) => {
             problemset: problemset
         }
 		
-        const response = await axios.post("http://localhost:8000/activities/create", activityData, {
-			headers: {
-				Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-				"Content-Type": "application/json",
-            }
-		})
+        const response = await activityService.createActivity(activityData)
 		const data = response.data
 		console.log(data)
 		activityStore.showSavedIndicator = true

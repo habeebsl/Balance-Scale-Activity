@@ -2,10 +2,8 @@
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
-import axios from 'axios'
-import { getIdToken } from 'firebase/auth'
-import { useAuthStore } from '@/stores/authManager'
 import { useActivity } from '@/stores/activityStore'
+import { activityService, problemService } from '@/services/api'
 import { isNegativeNumber } from '@/utils/helpers'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import CreateActivityLayout from '@/components/CreateActivityLayout.vue'
@@ -17,7 +15,6 @@ const fullPath = route.path
 const endingSegment = fullPath.split('/').filter(Boolean).pop()
 
 const router = useRouter()
-const authStore = useAuthStore()
 const activityStore = useActivity()
 
 const dbActivity = ref('')
@@ -55,13 +52,7 @@ const handleSave = async (formData) => {
                 problemData.push({id: problem})
             })
 
-            const response = await axios.delete(`http://localhost:8000/problems/delete`, {
-                data: problemData,
-                headers: {
-                    Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-                    "Content-Type": "application/json",
-                }
-            })
+            const response = await problemService.deleteProblem(problemData)
             console.log(response.status)
         }
 
@@ -78,12 +69,7 @@ const handleSave = async (formData) => {
             problemset: problemset
         }
 
-        const response = await axios.put(`http://localhost:8000/activities/${endingSegment}`, activityData, {
-            headers: {
-                Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-                "Content-Type": "application/json",
-            }
-        })
+        const response = await activityService.updateActivity(endingSegment, activityData)
         console.log(response)
         activityStore.showSavedIndicator = true
         setTimeout(() => {
@@ -109,12 +95,7 @@ const handleSave = async (formData) => {
 onMounted(async () => {
     try {
         isLoading.value = true
-        const response = await axios.get(`http://localhost:8000/activities/${endingSegment}`, {
-			headers: {
-				Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-				"Content-Type": "application/json",
-            }
-        })
+        const response = await activityService.getActivity(endingSegment)
         const data = response.data
         console.log(data)
         if (!data.can_edit) {

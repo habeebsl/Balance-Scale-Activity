@@ -1,17 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getIdToken } from 'firebase/auth'
-import axios from 'axios';
 import TemplateCard from '@/components/TemplateCard.vue'
-import { useAuthStore } from '@/stores/authManager'
 import { useActivity } from '@/stores/activityStore'
+import { activityService } from '@/services/api'
 import EmptyState from '@/components/EmptyState.vue'
 import NotificationMessage from '@/components/NotificationMessage.vue'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 
 
-const authStore = useAuthStore()
 const activityStore = useActivity()
 const activities = ref([])
 
@@ -30,12 +27,7 @@ const handleEdit = (id) => {
 const handleDelete = async (id) => {
     activityStore.isSaving = true;
     try {
-		const response = await axios.delete(`http://localhost:8000/activities/${id}`, {
-			headers: {
-				Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-				"Content-Type": "application/json",
-			}
-		})
+		const response = await activityService.deleteActivity(id)
         console.log(response.status)
         if (response.status == 204) {
             activities.value.forEach((activity, index) => {
@@ -67,12 +59,7 @@ const handleCreate = () => {
 onMounted(async () => {
     try {
         isLoading.value = true
-        const response = await axios.get("http://localhost:8000/templates", {
-			headers: {
-				Authorization: `Bearer ${await getIdToken(authStore.currentUser)}`,
-				"Content-Type": "application/json",
-            }
-        })
+        const response = await activityService.getTemplates()
         const data = response.data
         activities.value = data
         console.log(data)
