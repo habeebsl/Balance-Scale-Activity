@@ -22,7 +22,7 @@
 2. **Implement API Routes**
     - Connect Firebase for session management, user registration, and login.
         
-    ![Alt Text](https://github.com/habeebsl/Hiring-Challenge-Build-in-Public/blob/main/Balance_Scale.drawio.png)
+    ![Alt Text](https://github.com/habeebsl/Balance-Scale-Activity/blob/main/AuthFlow.png)
      
     - Create endpoints for fetching, updating, and saving game progress.
     - Allow educators to define activity templates and publish custom activities.
