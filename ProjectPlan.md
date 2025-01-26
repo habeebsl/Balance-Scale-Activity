@@ -3,13 +3,12 @@
 ### **Step 1: Front-End Development**
 
 1. **Implement Balance Scale Component**
-    - For interactive and realistic physics, I’m using Matter.js.
+    - Matter.js for physics properties and fluid balance scale animations.
     - Create a Vue component for the balance scale with adjustable settings.
     - Include animations and feedback to indicate when the scale is balanced.
 2. **Design User Interface**
     - Use Vue.js to create an easy-to-use game layout.
-    - Create sections for progress indicators, score monitoring, and activity instructions.
-    - Make sure your website is mobile and desktop friendly.
+    - Make the website mobile and desktop friendly.
 3. **Add Interactivity**
     - As users engage with the balance scale, give them real-time feedback.
     
@@ -20,9 +19,9 @@
     - Set up a FastAPI project and specify the models, routes, and utility folder structures.
     - Link the backend to a mySQL database so that user information and activity settings can be stored there.
 2. **Implement API Routes**
-    - Connect Firebase for session management, user registration, and login.
-    - Create endpoints for fetching, updating, and saving game progress.
-    - Allow educators to define activity templates and publish custom activities.
+    - Connect Firebase for session management and user registration.
+    - Create endpoints for fetching, updating, and deleting activities.
+    - Allow educators to control the visiblity of their activities.
 
 ### **Step 3: Activity Builder**
 
@@ -30,9 +29,7 @@
 2. Allow activity configurations to be saved and retrieved via FastAPI endpoints.
 
 ### **Step 4: Testing**
-
-1. Ensure responsiveness and compatibility across devices.
-2. Test API endpoints for correctness and security using pytest.
+- Test API endpoints for correctness and security using pytest.
 
 ### **Step 5: Dockerize application**
 
@@ -41,8 +38,8 @@
 | **Phase** | **Duration** | **Milestone** |
 | --- | --- | --- |
 | Front-End Development | 2 days | Balance Scale Component, UI ready |
-| Backend API Development | 1 day | Auth & Data APIs functional |
-| Activity Builder | 1 day | Builder operational, integrated with API |
+| Backend API Development | 2 day | Auth & Data APIs functional |
+| Activity Builder | 2 day | Builder operational, integrated with API |
 | Testing & Dockerizing | 1 day | Fully tested and dockerized app |
 
 ## **3. Project Tools**
