@@ -54,7 +54,7 @@
     
     - After the user is authenticated with firebase,  an ID token is generated which we can use to access the user details. We use this ID token to verify the user in the backend for each request, before actually processing the request. Here’s a flowchart:
 
-https://viewer.diagrams.net/?border=0&tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=Balance_Scale.drawio#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1VfywKA5dVA2R6W63jH4gW1ePXIuQ3w_r%26export%3Ddownload
+![Auth Flow](https://github.com/habeebsl/Balance-Scale-Activity/blob/main/images/AuthFlow.png)
 
 ## 3. Allowing Educators to Build Activities
 
@@ -86,8 +86,7 @@ https://viewer.diagrams.net/?border=0&tags=%7B%7D&lightbox=1&highlight=0000ff&ed
     
     - To solve this, I went with another implementation idea. So when the user clicks the sign in with google button on either of the pages, the user is verified by firebase auth, then frontend makes an initial request to the api, to verify that the user exists in the database. If so, the user is redirected to the activities page, and if not the user is added to the database, before being redirected. Here’s a flow chart for visualization:
     
-    https://viewer.diagrams.net/?border=0&tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=GoogleAuthFlow.drawio#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D15QpPBfga25GyifX9XOqpiJaHeW1BsmQz%26export%3Ddownload
-    
+![Google Auth Flow](https://github.com/habeebsl/Balance-Scale-Activity/blob/main/images/GoogleAuthFlow.png)    
 
 ## 5. Activity Structure
 
