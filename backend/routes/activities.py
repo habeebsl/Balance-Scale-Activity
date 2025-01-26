@@ -13,7 +13,6 @@ activity_router = APIRouter()
 @activity_router.post("/create", status_code=status.HTTP_201_CREATED, response_model=ActivityResponse)
 async def create_activity(request_data: CreateActivity, db: db_dependency, token=Depends(verify_token)):
     try:
-        print("before")
         uid = token["uid"]
         user = db.query(models.User).filter(models.User.uid == uid).first()
         db_activity = models.Activity(
@@ -24,7 +23,6 @@ async def create_activity(request_data: CreateActivity, db: db_dependency, token
         )
 
         db.add(db_activity)
-        print("Added activity")
 
         for problem in request_data.problemset:
             db_problem = models.Problem(
@@ -36,10 +34,9 @@ async def create_activity(request_data: CreateActivity, db: db_dependency, token
         db.commit()
         db.refresh(db_activity)
 
-        print(db_activity)
         return db_activity
     except Exception as e:
-        print(str(e))
+        raise HTTPException(status_code=500, detail=f"Error Creating Activity: {e}")
 
 
 @activity_router.get("/{id}", status_code=status.HTTP_200_OK, response_model=GetActivityResponseModel)
