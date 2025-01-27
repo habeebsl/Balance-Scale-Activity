@@ -30,10 +30,10 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 20s
-      retries: 10
+      test: ["CMD-SHELL", "mysql -uroot -pmysqlpassword -e 'SELECT 1'"]
+      interval: 30s
+      timeout: 30s
+      retries: 20
 
 networks:
   app-network:
