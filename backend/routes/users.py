@@ -65,5 +65,4 @@ async def set_user_role(request_data: RoleRequest, db: db_dependency, token=Depe
 
         return {"success": True}
     except Exception as e:
-        print("error: ", str(e))
         return {"error": str(e)}
