@@ -9,13 +9,13 @@ import { initializeApp } from "firebase/app"
 
 
 const firebaseConfig = {
-	apiKey: "AIzaSyBwU6RM8ukLVBjiDL8JagRzxUTfAbn-Jwc",
-	authDomain: "balance-scale-app.firebaseapp.com",
-	projectId: "balance-scale-app",
-	storageBucket: "balance-scale-app.firebasestorage.app",
-	messagingSenderId: "969848040896",
-	appId: "1:969848040896:web:5e1416fc0da62e0813ec25",
-	measurementId: "G-F31PJ9HHC1"
+	apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+	authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+	projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+	storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+	messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+	appId: import.meta.env.VITE_FIREBASE_APP_ID,
+	measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
 initializeApp(firebaseConfig);
