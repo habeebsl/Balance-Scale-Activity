@@ -34,7 +34,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:4173"],
+    allow_origins=["http://localhost:5173", "http://localhost:4173", "https://balance-scale-activity.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
