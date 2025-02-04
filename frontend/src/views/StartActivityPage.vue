@@ -50,9 +50,13 @@ const handleRestartStep = async () => {
     activityStore.restartStep()
 }
 
-const handleRestartActivity = () => {
+const handleRestartActivity = async () => {
     state.isEqualtoTarget = ""
-    activityStore.currentStep = 0 
+    await nextTick()
+    if (balanceScaleRef.value) {
+        balanceScaleRef.value.resetState()
+    }
+    activityStore.currentStep = 0
 }
 
 const handleExitClick = () => {
