@@ -6,7 +6,7 @@ import type { RemoveProblem } from '@/interfaces/RemoveProblem'
 import type { SetRole } from '@/interfaces/SetRole'
 
 const apiClient = axios.create({
-	baseURL: 'http://localhost:8000/api',
+	baseURL: 'https://activity-builder-backend.vercel.app/api',
 	headers: {
 		'Content-Type': 'application/json'
 	}
