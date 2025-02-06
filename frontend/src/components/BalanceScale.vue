@@ -1,7 +1,9 @@
 <script setup>
 import Matter from 'matter-js'
 import { onMounted, onUnmounted, ref, reactive, defineEmits } from 'vue'
-import { getBallRadius, getFontSize, getRandomColor, isNegativeNumber, isNumber } from '@/utils/helpers'
+import Tooltip from '@/components/Tooltip.vue'
+import { generateNumberSet } from '@/utils/numberGeneration'
+import { getBallRadius, getFontSize, getRandomColor } from '@/utils/helpers'
 
 const props = defineProps({
     target: Number,
@@ -22,6 +24,8 @@ const emit = defineEmits(['equivalent', 'not-equivalent', 'time-up'])
 const numInput = ref('')
 const scaleElement = ref(null)
 const inputCircles = ref([])
+const currentBall = ref(null)
+const fallingBall = ref(null)
 const inputNums = ref([])
 const showHints = ref(false)
 const timeRemaining = ref(props.timeLimit)
@@ -48,6 +52,39 @@ const difficulties = {
 }
 
 const difficultyColor = difficulties[props.difficulty]
+
+const tooltipState = ref([
+    {
+        show: false,
+        text: "Pick a number to start",
+        position: { x: 270, y: 550 },
+        direction: 'top'
+    },
+    {
+        show: false,
+        text: "The scale will tilt to show if your sum is too high or low",
+        position: { x: 700, y: 450 },
+        direction: 'top'
+    },
+    {
+        show: false,
+        text: "Try to match this target number",
+        position: { x: 980, y: 250 },
+        direction: 'top'
+    },
+    {
+        show: false,
+        text: "Keep track of your remaining moves here",
+        position: { x: 230, y: 80 },
+        direction: 'bottom'
+    },
+    {
+        show: false,
+        text: `Your numbers should add up to the target when you have made ${props.limit}/${props.limit} moves.`,
+        position: { x: 230, y: 80 },
+        direction: 'bottom'
+    },
+])
 
 const startTimer = () => {
     timer.value = setInterval(() => {
@@ -100,13 +137,20 @@ function createPlate(x, y, width, height, edgeRadius, isStatic = true, color = '
     return plate;
 }
 
-function createInputCircle(x, y, color, number) {
+function createInputCircle(x, y, color, number, draggable=false) {
+    if (!Matter.Bodies) {
+        console.error('Matter.Bodies is not initialized')
+        return null
+    }
+
     let radius = getBallRadius(number)
     let ball = Matter.Bodies.circle(x, y, radius, {
         render: { 
             fillStyle: color,
             text: number 
         },
+        color: color,
+        isDraggable: draggable,
         number: number,
         restitution: 0.5,
         friction: 0.1
@@ -162,40 +206,76 @@ const animatePlates = () => {
     })
 }
 
-
-
-const HandleSubmitandCreate = () => {
-    if (isNumber(numInput.value) === false) {
-        return;
-    } else if (isNegativeNumber(numInput.value) === true) {
-        return;
-    } else if (numInput.value === 0) {
-        return;
-    } else {
-        state.numOfInputs += 1
-
-        inputNums.value.push(Number(numInput.value))
-        let ball = createInputCircle(150, 30, `#${getRandomColor()}`, numInput.value)
-        Matter.Composite.add(engine.value.world, [ball])
-        numInput.value = ''
-        
-        updateScalePosition()
-
-        if (state.numOfInputs === props.limit) {
-            state.limitReached = true
-            if (sum() === props.target) {
-                emit('equivalent')
-                state.isEqualtoTarget = true
-
-            } else {
-                state.isEqualtoTarget = false
-                emit('not-equivalent')
-            }
-            return;
-        } else if (sum() > props.target) {
-            emit('not-equivalent')
-        } 
+const addBallstoPage = async (numberSet) => {
+    const ballsToAdd = []
+    let ballXposition = 250
+    
+    for (const number of numberSet) {
+        const ball = await createInputCircle(ballXposition, 450, getRandomColor(), number, true)
+        ballsToAdd.push(ball)
+        ballXposition += 200
     }
+    
+    Matter.Composite.add(engine.value.world, ballsToAdd)
+}
+
+const removeBall = (ball) => {
+    Matter.World.remove(engine.value.world, ball)
+    inputCircles.value = inputCircles.value.filter(circle => circle !== ball)
+    render.value.canvas.needsUpdate = true
+}
+
+const AddandUpdate = (num) => {
+    state.numOfInputs += 1
+    inputNums.value.push(Number(num))
+    console.log(sum())
+    
+    updateScalePosition()
+    const ballsToRemove = []
+    inputCircles.value.forEach((circle) => {
+        if (circle !== currentBall.value) {
+            ballsToRemove.push(circle)
+        }
+    })
+
+    if (state.numOfInputs === props.limit) {
+        state.limitReached = true
+        if (sum() === props.target) {
+            emit('equivalent')
+            state.isEqualtoTarget = true
+
+        } else {
+            console.log(sum())
+            state.isEqualtoTarget = false
+            emit('not-equivalent')
+        }
+        return;
+    } else if (sum() >= props.target) {
+        console.log(sum())
+        emit('not-equivalent')
+        return;
+    }
+
+    inputCircles.value = inputCircles.value.filter(circle => !ballsToRemove.includes(circle))
+    Matter.World.remove(engine.value.world, ballsToRemove)
+    const params = {
+        currentNumber: currentBall.value.number,
+        targetNumber: props.target,
+        inputsRemaining: props.limit-state.numOfInputs,
+        difficulty: props.difficulty
+    }
+    const numberSet = generateNumberSet(params)
+    addBallstoPage(numberSet)
+}
+
+const handleTooltipNext = async (index) => {
+    tooltipState.value[index].show = false
+    tooltipState.value[index+1].show = true
+}
+
+const handleTooltipFinish = async (index) => {
+    tooltipState.value[index].show = false
+    localStorage.setItem('hasPlayedBefore', 'true')
 }
 
 const resetState = () => {
@@ -205,6 +285,8 @@ const resetState = () => {
     numInput.value = ''
     inputCircles.value = []
     inputNums.value = []
+    currentBall.value = null
+    fallingBall.value = null
     state.numOfInputs = 0
     state.limitReached = false
     state.isEqualtoTarget = null
@@ -222,13 +304,23 @@ const resetState = () => {
         })
 
         Matter.Body.setPosition(leftPlate.value, {
-            x: 150,
+            x: 350,
             y: 300
         })
         Matter.Body.setPosition(rightPlate.value, {
-            x: 650,
+            x: 950,
             y: 300
         })
+
+        const params = {
+            currentNumber: 0,
+            targetNumber: props.target,
+            inputsRemaining: props.limit-state.numOfInputs,
+            difficulty: props.difficulty
+        }
+
+        const numberSet = generateNumberSet(params)
+        addBallstoPage(numberSet)
     }
 }
 
@@ -244,22 +336,22 @@ onMounted(async () => {
         element: scaleElement.value,
         engine: engine.value,
         options: {
-            width: 800,
+            width: 1300,
             height: 600,
             wireframes: false,
             background: 'transparent'
         }
     })
 
-    rightPlate.value = createPlate(650, 300, 180, 20, 20)
-    leftPlate.value = createPlate(150, 300, 180, 20, 20)
+    rightPlate.value = createPlate(950, 300, 180, 20, 20)
+    leftPlate.value = createPlate(350, 300, 180, 20, 20)
     
-    ground.value = Matter.Bodies.rectangle(400, 470, 810, 60, { 
+    ground.value = Matter.Bodies.rectangle(400, 620, 2800, 60, { 
         isStatic: true,
         render: { fillStyle: 'transparent' }
     })
 
-    targetBall.value = Matter.Bodies.circle(650, 200, getBallRadius(props.target), {
+    targetBall.value = Matter.Bodies.circle(950, 200, getBallRadius(props.target), {
         render: { fillStyle: `#${getRandomColor()}` }
     })
 
@@ -291,11 +383,64 @@ onMounted(async () => {
     runner.value = Matter.Runner.create()
     Matter.Runner.run(runner.value, engine.value)
 
+    const params = {
+        currentNumber: 0,
+        targetNumber: props.target,
+        inputsRemaining: props.limit-state.numOfInputs,
+        difficulty: props.difficulty
+    }
+
+
+    const numberSet = generateNumberSet(params)
+    console.log(numberSet)
+    addBallstoPage(numberSet)
+
+    const mouse = Matter.Mouse.create(render.value.canvas);
+    const mouseConstraint = Matter.MouseConstraint.create(engine.value, {
+        mouse: mouse,
+        constraint: {
+            stiffness: 0.2,
+            render: {
+                visible: false
+            }
+        }
+    });
+
+    mouseConstraint.collisionFilter = {
+        mask: 0x0002
+    };
+
+    Matter.World.add(engine.value.world, mouseConstraint);
+    render.value.mouse = mouse;
+
+    Matter.Events.on(mouseConstraint, "mousedown", function(event) {
+        const mousePosition = event.mouse.position;
+
+        const foundBodies = Matter.Query.point(engine.value.world.bodies, mousePosition)
+        const body = foundBodies.find(b => b.isDraggable)
+
+        if (body) {
+            const newBall = createInputCircle(350, 150, body.color, body.number)
+            if (!currentBall.value) {
+                currentBall.value = newBall
+                AddandUpdate(currentBall.value.number)
+            }
+            fallingBall.value = body.number
+            removeBall(body)
+            Matter.Composite.add(engine.value.world, [newBall])
+        }
+    });
+
+    Matter.Events.on(mouseConstraint, "startdrag", function(event) {
+        if (!event.body.isDraggable) {
+            Matter.MouseConstraint.release(mouseConstraint)
+        }
+    })
+
     let isHandlingCollision = false;
 
     Matter.Events.on(engine.value, 'collisionStart', (event) => {
         if (isHandlingCollision) return;
-        
         const pairs = event.pairs;
 
         pairs.forEach((pair) => {
@@ -328,8 +473,11 @@ onMounted(async () => {
                     newColor, 
                     combinedNumber
                 )
+
+                currentBall.value = newCircle
                 
                 Matter.Composite.add(engine.value.world, [newCircle])
+                AddandUpdate(fallingBall.value)
 
                 setTimeout(() => {
                     isHandlingCollision = false;
@@ -344,22 +492,51 @@ onMounted(async () => {
     if (props.timeLimit) {
         startTimer()
     }
+    const hasPlayedBefore = localStorage.getItem('hasPlayedBefore')
+    if (!hasPlayedBefore  || hasPlayedBefore === "false") {
+        if (props.timeLimit) {
+            tooltipState.value.push({
+                show: false,
+                text: "Complete the puzzle before time runs out!",
+                position: { x: 120, y: 80 },
+                direction: 'bottom'
+            })
+        }
+        tooltipState.value[0].show = true
+    }
 })
 
 onUnmounted(() => {
     if (engine.value) {
         Matter.Events.off(engine.value)
         Matter.Engine.clear(engine.value)
+        engine.value = null
     }
+
     if (render.value) {
         Matter.Render.stop(render.value)
+        render.value.canvas.remove()
+        render.value = null
     }
+
     if (runner.value) {
         Matter.Runner.stop(runner.value)
+        runner.value = null
     }
+
     if (timer.value) {
         clearInterval(timer.value)
+        timer.value = null
     }
+
+    inputCircles.value = []
+    inputNums.value = []
+    currentBall.value = null
+    fallingBall.value = null
+    targetBall.value = null
+    ground.value = null
+    leftPlate.value = null
+    rightPlate.value = null
 })
 </script>
 
@@ -445,12 +622,18 @@ onUnmounted(() => {
             </svg>
         </div>
     </div>
-    <div class="form-container">
-        <form @submit.prevent="HandleSubmitandCreate"> 
-            <input type="number" v-model="numInput" class="number-input">
-            <button type="submit" class="submit-button">Submit</button>
-        </form>
-    </div>
+    <Tooltip
+      v-for="(tooltip, index) in tooltipState"
+      :key="index"
+      :text="tooltip.text"
+      :position="tooltip.position"
+      :show="tooltip.show"
+      :direction="tooltip.direction"
+      :currentStep="index+1"
+      :totalSteps="tooltipState.length"
+      @next="handleTooltipNext(index)"
+      @close="handleTooltipFinish(index)"
+    />
 </div>
 </template>
 
@@ -686,6 +869,7 @@ onUnmounted(() => {
     scale: 0.8;
     justify-content: center;
     align-items: center;
+    z-index: -1;
 }
 
 svg {
