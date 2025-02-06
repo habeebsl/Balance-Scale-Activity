@@ -2,7 +2,8 @@
 import Matter from 'matter-js'
 import { onMounted, onUnmounted, ref, reactive, defineEmits } from 'vue'
 import Tooltip from '@/components/Tooltip.vue'
-import { generateNumberSet } from '@/utils/numberGeneration'
+import { generateNumberPuzzle } from '@/utils/numberGeneration'
+import NumberSelectionGrid from '@/components/NumberSelectionGrid.vue'
 import { getBallRadius, getFontSize, getRandomColor } from '@/utils/helpers'
 
 const props = defineProps({
@@ -21,15 +22,13 @@ const props = defineProps({
 
 const emit = defineEmits(['equivalent', 'not-equivalent', 'time-up'])
 
-const numInput = ref('')
 const scaleElement = ref(null)
-const inputCircles = ref([])
 const currentBall = ref(null)
-const fallingBall = ref(null)
 const inputNums = ref([])
 const showHints = ref(false)
 const timeRemaining = ref(props.timeLimit)
 const timer = ref(null)
+const numberSet = ref([])
 
 const state = reactive({
     numOfInputs: 0,
@@ -57,19 +56,19 @@ const tooltipState = ref([
     {
         show: false,
         text: "Pick a number to start",
-        position: { x: 270, y: 550 },
-        direction: 'top'
+        position: { x: 990, y: 160 },
+        direction: 'left'
     },
     {
         show: false,
         text: "The scale will tilt to show if your sum is too high or low",
-        position: { x: 700, y: 450 },
+        position: { x: 450, y: 450 },
         direction: 'top'
     },
     {
         show: false,
         text: "Try to match this target number",
-        position: { x: 980, y: 250 },
+        position: { x: 690, y: 260 },
         direction: 'top'
     },
     {
@@ -110,7 +109,11 @@ const toggleHints = () => {
 }
 
 const sum = () => {
-    return inputNums.value.reduce((acc, num) => acc + num, 0)
+    let counter = 0
+    for (let item of inputNums.value) {
+        counter += item.number
+    }
+    return counter
 }
 
 function createPlate(x, y, width, height, edgeRadius, isStatic = true, color = 'yellow') {
@@ -137,12 +140,7 @@ function createPlate(x, y, width, height, edgeRadius, isStatic = true, color = '
     return plate;
 }
 
-function createInputCircle(x, y, color, number, draggable=false) {
-    if (!Matter.Bodies) {
-        console.error('Matter.Bodies is not initialized')
-        return null
-    }
-
+function createInputCircle(x, y, color, number) {
     let radius = getBallRadius(number)
     let ball = Matter.Bodies.circle(x, y, radius, {
         render: { 
@@ -150,19 +148,16 @@ function createInputCircle(x, y, color, number, draggable=false) {
             text: number 
         },
         color: color,
-        isDraggable: draggable,
         number: number,
         restitution: 0.5,
         friction: 0.1
     })
-    
-    inputCircles.value.push(ball)
 
     return ball
 }
 
-const leftPlateTargetY = ref(300)
-const rightPlateTargetY = ref(300)
+const leftPlateTargetY = ref(400)
+const rightPlateTargetY = ref(400)
 
 const lerp = (start, end, factor) => {
     return start + (end - start) * factor
@@ -172,18 +167,18 @@ const updateScalePosition = () => {
     const currentSum = sum()
     const difference = currentSum - props.target
 
-    const maxElevation = 50
+    const maxElevation = 60
     const elevationAmount = Math.min(Math.abs(difference) / props.target, 1) * maxElevation
 
     if (currentSum > props.target) {
-        leftPlateTargetY.value = 300 + elevationAmount
-        rightPlateTargetY.value = 300 - elevationAmount
+        leftPlateTargetY.value = 400 + elevationAmount
+        rightPlateTargetY.value = 400 - elevationAmount
     } else if (currentSum < props.target) {
-        leftPlateTargetY.value = 300 - elevationAmount
-        rightPlateTargetY.value = 300 + elevationAmount
+        leftPlateTargetY.value = 400 - elevationAmount
+        rightPlateTargetY.value = 400 + elevationAmount
     } else {
-        leftPlateTargetY.value = 300
-        rightPlateTargetY.value = 300
+        leftPlateTargetY.value = 400
+        rightPlateTargetY.value = 400
     }
 }
 
@@ -206,37 +201,53 @@ const animatePlates = () => {
     })
 }
 
-const addBallstoPage = async (numberSet) => {
-    const ballsToAdd = []
-    let ballXposition = 250
-    
-    for (const number of numberSet) {
-        const ball = await createInputCircle(ballXposition, 450, getRandomColor(), number, true)
-        ballsToAdd.push(ball)
-        ballXposition += 200
-    }
-    
-    Matter.Composite.add(engine.value.world, ballsToAdd)
-}
-
 const removeBall = (ball) => {
     Matter.World.remove(engine.value.world, ball)
-    inputCircles.value = inputCircles.value.filter(circle => circle !== ball)
     render.value.canvas.needsUpdate = true
 }
 
-const AddandUpdate = (num) => {
-    state.numOfInputs += 1
-    inputNums.value.push(Number(num))
-    console.log(sum())
-    
+const handleSelectedNum = (item) => {
+    const itemObj = {
+        number: item.number,
+        id: item.id
+    }
+    if (item.selected) {
+        state.numOfInputs += 1
+        inputNums.value.push(itemObj)
+    } else {
+        state.numOfInputs -= 1
+        inputNums.value.forEach((item, index) => {
+            if (item.id === itemObj.id) {
+                inputNums.value.splice(index, 1)
+            }
+        })
+    }
+
+    if (currentBall.value) {
+        removeBall(currentBall.value)
+    }
+
+    const combinedNumber = sum()
+
+    if (!combinedNumber) {
+        currentBall.value = null
+        updateScalePosition()
+        return;
+    }
+
+    let newColor = combinedNumber === props.target ? 'green' : 
+                combinedNumber > props.target ? 'red' : 'yellow'
+
+    const newCircle = createInputCircle(
+        390, 
+        300, 
+        newColor, 
+        combinedNumber
+    )
+    Matter.Composite.add(engine.value.world, [newCircle])
+    currentBall.value = newCircle
+
     updateScalePosition()
-    const ballsToRemove = []
-    inputCircles.value.forEach((circle) => {
-        if (circle !== currentBall.value) {
-            ballsToRemove.push(circle)
-        }
-    })
 
     if (state.numOfInputs === props.limit) {
         state.limitReached = true
@@ -255,17 +266,6 @@ const AddandUpdate = (num) => {
         emit('not-equivalent')
         return;
     }
-
-    inputCircles.value = inputCircles.value.filter(circle => !ballsToRemove.includes(circle))
-    Matter.World.remove(engine.value.world, ballsToRemove)
-    const params = {
-        currentNumber: currentBall.value.number,
-        targetNumber: props.target,
-        inputsRemaining: props.limit-state.numOfInputs,
-        difficulty: props.difficulty
-    }
-    const numberSet = generateNumberSet(params)
-    addBallstoPage(numberSet)
 }
 
 const handleTooltipNext = async (index) => {
@@ -279,48 +279,45 @@ const handleTooltipFinish = async (index) => {
 }
 
 const resetState = () => {
+    currentBall.value = null
+    inputNums.value = []
     timeRemaining.value = props.timeLimit
     clearInterval(timer.value)
     startTimer()
-    numInput.value = ''
-    inputCircles.value = []
-    inputNums.value = []
-    currentBall.value = null
-    fallingBall.value = null
     state.numOfInputs = 0
     state.limitReached = false
     state.isEqualtoTarget = null
-    leftPlateTargetY.value = 300
-    rightPlateTargetY.value = 300
+    leftPlateTargetY.value = 400
+    rightPlateTargetY.value = 400
 
     if (engine.value) {
-        const bodiesToKeep = [ground.value, leftPlate.value, rightPlate.value, targetBall.value]
-        const allBodies = Matter.Composite.allBodies(engine.value.world)
+        Matter.Engine.clear(engine.value)
+        engine.value = Matter.Engine.create()
+
+        ground.value = Matter.Bodies.rectangle(400, 620, 2800, 60, { 
+            isStatic: true,
+            render: { fillStyle: 'transparent' }
+        })
+
+        rightPlate.value = createPlate(890, 400, 180, 20, 20)
+        leftPlate.value = createPlate(390, 400, 180, 20, 20)
         
-        allBodies.forEach(body => {
-            if (!bodiesToKeep.includes(body)) {
-                Matter.World.remove(engine.value.world, body)
-            }
+        targetBall.value = Matter.Bodies.circle(890, 300, getBallRadius(props.target), {
+            render: { fillStyle: `#${getRandomColor()}` }
         })
 
-        Matter.Body.setPosition(leftPlate.value, {
-            x: 350,
-            y: 300
-        })
-        Matter.Body.setPosition(rightPlate.value, {
-            x: 950,
-            y: 300
-        })
+        Matter.Composite.add(engine.value.world, [
+            ground.value, 
+            leftPlate.value, 
+            rightPlate.value, 
+            targetBall.value
+        ])
 
-        const params = {
-            currentNumber: 0,
-            targetNumber: props.target,
-            inputsRemaining: props.limit-state.numOfInputs,
+        numberSet.value = generateNumberPuzzle({
+            totalMoves: props.limit,
+            target: props.target,
             difficulty: props.difficulty
-        }
-
-        const numberSet = generateNumberSet(params)
-        addBallstoPage(numberSet)
+        }).numbers
     }
 }
 
@@ -343,15 +340,15 @@ onMounted(async () => {
         }
     })
 
-    rightPlate.value = createPlate(950, 300, 180, 20, 20)
-    leftPlate.value = createPlate(350, 300, 180, 20, 20)
+    rightPlate.value = createPlate(890, 400, 180, 20, 20)
+    leftPlate.value = createPlate(390, 400, 180, 20, 20)
     
     ground.value = Matter.Bodies.rectangle(400, 620, 2800, 60, { 
         isStatic: true,
         render: { fillStyle: 'transparent' }
     })
 
-    targetBall.value = Matter.Bodies.circle(950, 200, getBallRadius(props.target), {
+    targetBall.value = Matter.Bodies.circle(890, 300, getBallRadius(props.target), {
         render: { fillStyle: `#${getRandomColor()}` }
     })
 
@@ -365,11 +362,11 @@ onMounted(async () => {
         ctx.textBaseline = 'middle'
         ctx.fillText(props.target, targetBall.value.position.x, targetBall.value.position.y)
 
-        inputCircles.value.forEach(circle => {
-            fontSize = getFontSize(circle.number)
+        if (currentBall.value) {
+            fontSize = getFontSize(currentBall.value.number)
             ctx.font = `${fontSize}px "Bubblegum Sans", sans-serif`
-            ctx.fillText(circle.number, circle.position.x, circle.position.y)
-        })
+            ctx.fillText(currentBall.value.number, currentBall.value.position.x, currentBall.value.position.y)
+        }
     })
 
     Matter.Composite.add(engine.value.world, [
@@ -383,116 +380,21 @@ onMounted(async () => {
     runner.value = Matter.Runner.create()
     Matter.Runner.run(runner.value, engine.value)
 
-    const params = {
-        currentNumber: 0,
-        targetNumber: props.target,
-        inputsRemaining: props.limit-state.numOfInputs,
-        difficulty: props.difficulty
-    }
-
-
-    const numberSet = generateNumberSet(params)
-    console.log(numberSet)
-    addBallstoPage(numberSet)
-
-    const mouse = Matter.Mouse.create(render.value.canvas);
-    const mouseConstraint = Matter.MouseConstraint.create(engine.value, {
-        mouse: mouse,
-        constraint: {
-            stiffness: 0.2,
-            render: {
-                visible: false
-            }
-        }
-    });
-
-    mouseConstraint.collisionFilter = {
-        mask: 0x0002
-    };
-
-    Matter.World.add(engine.value.world, mouseConstraint);
-    render.value.mouse = mouse;
-
-    Matter.Events.on(mouseConstraint, "mousedown", function(event) {
-        const mousePosition = event.mouse.position;
-
-        const foundBodies = Matter.Query.point(engine.value.world.bodies, mousePosition)
-        const body = foundBodies.find(b => b.isDraggable)
-
-        if (body) {
-            const newBall = createInputCircle(350, 150, body.color, body.number)
-            if (!currentBall.value) {
-                currentBall.value = newBall
-                AddandUpdate(currentBall.value.number)
-            }
-            fallingBall.value = body.number
-            removeBall(body)
-            Matter.Composite.add(engine.value.world, [newBall])
-        }
-    });
-
-    Matter.Events.on(mouseConstraint, "startdrag", function(event) {
-        if (!event.body.isDraggable) {
-            Matter.MouseConstraint.release(mouseConstraint)
-        }
-    })
-
-    let isHandlingCollision = false;
-
-    Matter.Events.on(engine.value, 'collisionStart', (event) => {
-        if (isHandlingCollision) return;
-        const pairs = event.pairs;
-
-        pairs.forEach((pair) => {
-            const { bodyA, bodyB } = pair;
-
-            const circleA = inputCircles.value.find((circle) => circle === bodyA)
-            const circleB = inputCircles.value.find((circle) => circle === bodyB)
-
-            if (circleA && circleB) {
-                isHandlingCollision = true
-                
-                const numberA = circleA.number
-                const numberB = circleB.number
-                const combinedNumber = numberA + numberB
-
-                let newColor = combinedNumber === props.target ? 'green' : 
-                                combinedNumber > props.target ? 'red' : 'yellow'
-                              
-                let newPosition = {
-                    x: (circleA.position.x + circleB.position.x) / 2,
-                    y: (circleA.position.y + circleB.position.y) / 2,
-                }
-
-                Matter.World.remove(engine.value.world, [circleA, circleB])
-                inputCircles.value = inputCircles.value.filter((c) => c !== circleA && c !== circleB)
-
-                const newCircle = createInputCircle(
-                    newPosition.x, 
-                    newPosition.y, 
-                    newColor, 
-                    combinedNumber
-                )
-
-                currentBall.value = newCircle
-                
-                Matter.Composite.add(engine.value.world, [newCircle])
-                AddandUpdate(fallingBall.value)
-
-                setTimeout(() => {
-                    isHandlingCollision = false;
-                }, 100)
-            }
-        })
-    })
-
     Matter.Events.on(engine.value, 'beforeUpdate', () => {
         animatePlates()
     })
     if (props.timeLimit) {
         startTimer()
     }
+
+    numberSet.value = generateNumberPuzzle({
+        totalMoves: props.limit,
+        target: props.target,
+        difficulty: props.difficulty
+    }).numbers
+
     const hasPlayedBefore = localStorage.getItem('hasPlayedBefore')
+
     if (!hasPlayedBefore  || hasPlayedBefore === "false") {
         if (props.timeLimit) {
             tooltipState.value.push({
@@ -529,10 +431,7 @@ onUnmounted(() => {
         timer.value = null
     }
 
-    inputCircles.value = []
     inputNums.value = []
-    currentBall.value = null
-    fallingBall.value = null
     targetBall.value = null
     ground.value = null
     leftPlate.value = null
@@ -623,16 +522,20 @@ onUnmounted(() => {
         </div>
     </div>
     <Tooltip
-      v-for="(tooltip, index) in tooltipState"
-      :key="index"
-      :text="tooltip.text"
-      :position="tooltip.position"
-      :show="tooltip.show"
-      :direction="tooltip.direction"
-      :currentStep="index+1"
-      :totalSteps="tooltipState.length"
-      @next="handleTooltipNext(index)"
-      @close="handleTooltipFinish(index)"
+        v-for="(tooltip, index) in tooltipState"
+        :key="index"
+        :text="tooltip.text"
+        :position="tooltip.position"
+        :show="tooltip.show"
+        :direction="tooltip.direction"
+        :currentStep="index+1"
+        :totalSteps="tooltipState.length"
+        @next="handleTooltipNext(index)"
+        @close="handleTooltipFinish(index)"
+    />
+    <NumberSelectionGrid
+        :numbers="numberSet"
+        @selected="handleSelectedNum"
     />
 </div>
 </template>
@@ -641,9 +544,8 @@ onUnmounted(() => {
 .scale {
     display: grid;
     margin: 0;
-    margin-top: 38px;
-    width: 800;
-    height: 500;
+    width: calc(100vw - 450px);
+    height: 300px;
     justify-content: center;
 }
 
@@ -651,11 +553,12 @@ onUnmounted(() => {
     position: absolute;
     top: 24px;
     left: 0;
-    right: 0;
+    right: 250px;
     display: flex;
     justify-content: space-between;
     padding: 0 40px;
     z-index: 30;
+    width: calc(100vw - 450px);
 }
 
 .status-left {
@@ -816,7 +719,7 @@ onUnmounted(() => {
 .hints-popup {
     position: absolute;
     top: 80px;
-    right: 40px;
+    right: 490px;
     background-color: white;
     border: 2px solid #3b82f6;
     border-radius: 12px;
@@ -865,14 +768,14 @@ onUnmounted(() => {
 
 .all-svg {
     display: flex;
-    margin: -400px 0px 0px 0px;
+    margin: -300px 0px 0px 0px;
     scale: 0.8;
     justify-content: center;
     align-items: center;
     z-index: -1;
 }
 
-svg {
+svg { 
     position: absolute;
 }
 

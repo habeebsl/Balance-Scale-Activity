@@ -56,7 +56,7 @@ const handleRestartActivity = async () => {
     if (balanceScaleRef.value) {
         balanceScaleRef.value.resetState()
     }
-    activityStore.currentStep = 0
+    activityStore.restartActivity()
 }
 
 const handleExitClick = () => {

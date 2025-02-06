@@ -1,103 +1,72 @@
-interface NumberGenerationParams {
-    currentNumber: number;
-    targetNumber: number;
-    inputsRemaining: number;
-    difficulty: string;
+interface PuzzleOptions {
+    totalMoves: number;
+    target: number;
+    difficulty: 'easy' | 'medium' | 'hard';
 }
 
-export function generateNumberSet(params: NumberGenerationParams): number[] {
-    const { currentNumber, targetNumber, inputsRemaining, difficulty } = params
-    const distanceToTarget = targetNumber - currentNumber
-    const numbers: number[] = []
-    const usedNumbers = new Set<number>()
+interface PuzzleResult {
+    numbers: number[];
+    solution: number[];
+}
 
-    function generateOptimalNumber(): number {
-        return Math.ceil(distanceToTarget / inputsRemaining);
+export function generateNumberPuzzle(options: PuzzleOptions): PuzzleResult {
+    const { totalMoves, target, difficulty } = options
+
+    const extraNumbers = {
+        easy: 2,
+        medium: 3,
+        hard: 4
     }
 
-    function generateNearOptimalNumber(optimal: number): number {
-        let factor = null
-        switch (difficulty) {
-            case 'easy':
-                factor = 0.5
-                break
-            case 'medium':
-                factor = 0.7
-                break
-            case 'hard':
-                factor = 0.9
-                break
-            default:
-                factor = 0.6
-                break
+    function generateSolution(): number[] {
+        const solution: number[] = []
+        let remainingTarget = target
+        
+        for (let i = 0; i < totalMoves - 1; i++) {
+            const maxPossible = remainingTarget - (totalMoves - i - 1)
+            const minPossible = 1
+            
+            if (maxPossible < minPossible) {
+                throw new Error('Invalid parameters')
+            }
+            
+            const num = Math.floor(Math.random() * (maxPossible - minPossible + 1)) + minPossible
+            solution.push(num)
+            remainingTarget -= num
         }
-        const variation = Math.max(1, Math.floor(optimal * (Math.random() * factor)))
-        return optimal + (Math.random() < 0.5 ? -variation : variation)
+        
+        solution.push(remainingTarget)
+        return solution
     }
 
-    function generateOvershootNumber(): number {
-        return distanceToTarget + Math.ceil(Math.random() * (inputsRemaining * 2));
-    }
+    function generateDecoys(solution: number[]): number[] {
+        const decoys: number[] = [];
+        const totalDecoys = extraNumbers[difficulty];
+        const used = new Set(solution);
 
-    function generateTrickyNumber(optimal: number): number {
-        return optimal + Math.floor(Math.random() * 3) * inputsRemaining;
-    }
-
-    if (inputsRemaining > 1) {
-        const optimal = generateOptimalNumber();
-        let factor = null
-        switch (difficulty) {
-            case 'easy':
-                factor = 0.5
-                break
-            case 'medium':
-                factor = 0.7
-                break
-            case 'hard':
-                factor = 0.9
-                break
-            default:
-                factor = 0.6
-                break
-        }
-        if (Math.random() < factor) {
-            numbers.push(optimal);
-            usedNumbers.add(optimal);
-        }
-
-        while (numbers.length < 5) {
-            let num;
-            if (numbers.length === 1) num = generateNearOptimalNumber(optimal);
-            else if (numbers.length === 2) num = generateTrickyNumber(optimal)
-            else if (numbers.length === 3 && Math.random() < 0.3) num = generateTrickyNumber(optimal);
-            else num = generateOvershootNumber();
-
-            if (!usedNumbers.has(num) && num > 0) {
-                numbers.push(num)
-                usedNumbers.add(num)
+        for (let i = 0; i < totalDecoys; i++) {
+            let decoy = 1
+            const max = Math.max(...solution) + 2
+            
+            while (used.has(decoy) && decoy <= max) {
+                decoy++;
+            }
+            
+            if (!used.has(decoy)) {
+                decoys.push(decoy);
+                used.add(decoy);
             }
         }
-    } else {
-        numbers.push(distanceToTarget);
-        usedNumbers.add(distanceToTarget);
 
-        let addedOvershoot = false;
-
-        while (numbers.length < 5) {
-            let num;
-            if (!addedOvershoot && numbers.length >= 3) {
-                num = generateOvershootNumber();
-                addedOvershoot = true;
-            } else {
-                num = distanceToTarget + (Math.random() < 0.5 ? 1 : -1) * Math.ceil(Math.random() * 5);
-            }
-
-            if (!usedNumbers.has(num) && num > 0) {
-                numbers.push(num);
-                usedNumbers.add(num);
-            }
-        }
+        return decoys
     }
 
-    return numbers.sort(() => Math.random() - 0.5);
+    const solution = generateSolution()
+    const decoys = generateDecoys(solution)
+    const allNumbers = [...solution, ...decoys].sort(() => Math.random() - 0.5)
+
+    return {
+        numbers: allNumbers,
+        solution: solution
+    }
 }
