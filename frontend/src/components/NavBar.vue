@@ -1,7 +1,6 @@
 <script setup>
-import { useRouter, useRoute } from 'vue-router'
-import { RouterLink } from 'vue-router'
-import { ref, watchEffect, computed, onMounted } from 'vue'
+import { useRouter, useRoute, RouterLink } from 'vue-router'
+import { ref, watchEffect, computed } from 'vue'
 import { useAuthStore } from '@/stores/authManager'
  
 

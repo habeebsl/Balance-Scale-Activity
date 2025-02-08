@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { defineEmits } from 'vue'
 import { useAuthMetaStore } from '@/stores/authMetaStore'
 import AuthContainer from '@/components/AuthContainer.vue'
 import Divider from '@/components/Divider.vue'

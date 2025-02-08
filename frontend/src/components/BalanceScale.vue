@@ -235,8 +235,15 @@ const handleSelectedNum = (item) => {
         return;
     }
 
-    let newColor = combinedNumber === props.target ? 'green' : 
-                combinedNumber > props.target ? 'red' : 'yellow'
+    let newColor;
+
+    if (combinedNumber === props.target) {
+        newColor = 'green'
+    } else if (combinedNumber > props.target) {
+        newColor = 'red'
+    } else {
+        newColor = 'yellow'
+    }
 
     const newCircle = createInputCircle(
         390, 
@@ -250,21 +257,18 @@ const handleSelectedNum = (item) => {
     updateScalePosition()
 
     if (state.numOfInputs === props.limit) {
-        state.limitReached = true
+        state.limitReached = true;
         if (sum() === props.target) {
             emit('equivalent')
-            state.isEqualtoTarget = true
-
+            state.isEqualtoTarget = true;
         } else {
             console.log(sum())
-            state.isEqualtoTarget = false
+            state.isEqualtoTarget = false;
             emit('not-equivalent')
         }
-        return;
     } else if (sum() >= props.target) {
         console.log(sum())
         emit('not-equivalent')
-        return;
     }
 }
 

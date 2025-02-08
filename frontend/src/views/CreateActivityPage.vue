@@ -44,7 +44,6 @@ const handleSave = async (formData) => {
         }
 		
         const response = await activityService.createActivity(activityData)
-		const data = response.data
 		activityStore.showSavedIndicator = true
         setTimeout(() => {
             activityStore.showSavedIndicator = false
