@@ -106,7 +106,6 @@ async def delete_activity(id: str, db: db_dependency, token=Depends(verify_token
     
     db.delete(activity)
     db.commit()
-    return
 
 
 @activity_router.get("", status_code=status.HTTP_200_OK, response_model=list[PublishedActivityResponse])

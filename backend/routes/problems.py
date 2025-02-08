@@ -26,4 +26,3 @@ async def delete_problems(request_data: list[DeleteProblems], db: db_dependency,
         print(f"Deleted problem with ID: {problem_data.id}")
 
     db.commit()
-    return
