@@ -29,4 +29,4 @@ This project is built using the following technologies:
 
 ### Demo Video
 
-[![Balance Scale Demo](https://github.com/user-attachments/assets/4675711d-8e34-472c-bd60-51c16f13266a)](https://drive.google.com/file/d/1BqD23CavrVAs9YHBWfT0lBWGMyzJT89Z)
+[![Balance Scale Demo](https://github.com/user-attachments/assets/5b29d82f-1c5a-4471-bccd-e98960de866a)](https://drive.google.com/file/d/1yltd1TW-TTagoBW8HNnLlyoYeLsoQUXD)
