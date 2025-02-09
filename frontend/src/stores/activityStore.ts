@@ -52,15 +52,6 @@ export const useActivity = defineStore('activity', {
             }
         },
 
-        restartActivity() {
-            this.problems.forEach((problem, index) => {
-                this.problems[index] = {
-                    ...problem,
-                    key: uuidv4()
-                }
-            })
-        },
-
         addDbProblem({ id, key, step, target, limit, difficulty, time_limit, hint }: Problem) {
             this.problems.splice(step-1, 0, {
                 id: id,
